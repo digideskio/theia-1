@@ -48,6 +48,11 @@ export interface ApplicationProps extends NpmRegistryProps {
     readonly target: ApplicationProps.Target;
 
     /**
+     * Name of the application.
+     */
+    readonly applicationName: string;
+
+    /**
      * Frontend related properties.
      */
     readonly frontend: Readonly<{ config: FrontendApplicationConfig }>;
@@ -65,6 +70,7 @@ export namespace ApplicationProps {
     export const DEFAULT: ApplicationProps = {
         ...NpmRegistryProps.DEFAULT,
         target: 'browser',
+        applicationName: 'Theia',
         backend: {
             config: {}
         },

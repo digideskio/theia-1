@@ -18,6 +18,7 @@ import { injectable, inject, postConstruct } from 'inversify';
 import URI from '@theia/core/lib/common/uri';
 import { FileSystem, FileStat } from '@theia/filesystem/lib/common';
 import { FileSystemWatcher, FileChangeEvent } from '@theia/filesystem/lib/browser/filesystem-watcher';
+import { ApplicationServer } from '@theia/core/lib/common/application-protocol';
 import { WorkspaceServer } from '../common';
 import { WindowService } from '@theia/core/lib/browser/window/window-service';
 import { FrontendApplication, FrontendApplicationContribution } from '@theia/core/lib/browser';
@@ -64,8 +65,14 @@ export class WorkspaceService implements FrontendApplicationContribution {
     @inject(WorkspacePreferences)
     protected preferences: WorkspacePreferences;
 
+    @inject(ApplicationServer)
+    protected application: ApplicationServer;
+
+    protected applicationName: Promise<string>;
+
     @postConstruct()
     protected async init(): Promise<void> {
+        this.applicationName = this.application.getApplicationProps().then(props => props.applicationName);
         const workspaceUri = await this.server.getMostRecentlyUsedWorkspace();
         const workspaceFileStat = await this.toFileStat(workspaceUri);
         await this.setWorkspace(workspaceFileStat);
@@ -168,19 +175,25 @@ export class WorkspaceService implements FrontendApplicationContribution {
         }
     }
 
-    protected updateTitle(): void {
+    protected async formatTitle(title: string): Promise<string> {
+        return `${title} - ${await this.applicationName}`;
+    }
+
+    protected async updateTitle() {
+        let title: string;
         if (this._workspace) {
             const uri = new URI(this._workspace.uri);
             const displayName = uri.displayName;
             if (!this._workspace.isDirectory &&
                 (displayName.endsWith(`.${THEIA_EXT}`) || displayName.endsWith(`.${VSCODE_EXT}`))) {
-                document.title = displayName.slice(0, displayName.lastIndexOf('.'));
+                title = displayName.slice(0, displayName.lastIndexOf('.'));
             } else {
-                document.title = displayName;
+                title = displayName;
             }
         } else {
-            document.title = window.location.href;
+            title = '<No Workspace>';
         }
+        document.title = await this.formatTitle(title);
     }
 
     /**

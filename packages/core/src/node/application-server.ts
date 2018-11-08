@@ -16,7 +16,7 @@
 
 import { injectable, inject } from 'inversify';
 import { ApplicationServer, ExtensionInfo, ApplicationInfo } from '../common/application-protocol';
-import { ApplicationPackage } from '@theia/application-package';
+import { ApplicationPackage, ApplicationProps } from '@theia/application-package';
 
 @injectable()
 export class ApplicationServerImpl implements ApplicationServer {
@@ -39,6 +39,10 @@ export class ApplicationServerImpl implements ApplicationServer {
             return Promise.resolve({ name, version });
         }
         return Promise.resolve(undefined);
+    }
+
+    async getApplicationProps(): Promise<ApplicationProps> {
+        return this.applicationPackage.props;
     }
 
 }

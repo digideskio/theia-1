@@ -15,6 +15,7 @@
  ********************************************************************************/
 
 // tslint:disable:no-unused-expression
+// tslint:disable:no-any
 
 import { enableJSDOM } from '@theia/core/lib/browser/test/jsdom';
 
@@ -46,6 +47,7 @@ import { MockWorkspaceServer } from '@theia/workspace/lib/common/test/mock-works
 import { MockWindowService } from '@theia/core/lib/browser/window/test/mock-window-service';
 import { WorkspaceService } from '@theia/workspace/lib/browser/workspace-service';
 import { WorkspacePreferences, createWorkspacePreferences } from '@theia/workspace/lib/browser/workspace-preferences';
+import { ApplicationServer } from '@theia/core/lib/common/application-protocol';
 import * as sinon from 'sinon';
 import URI from '@theia/core/lib/common/uri';
 
@@ -63,6 +65,12 @@ const mockWorkspacePreferenceEmitter = new Emitter<void>();
 before(async () => {
     testContainer = new Container();
     bindPreferenceSchemaProvider(testContainer.bind.bind(testContainer));
+
+    testContainer.bind(ApplicationServer).toConstantValue(<ApplicationServer>{
+        getApplicationInfo: async () => undefined,
+        getExtensionsInfos: async () => [],
+        getApplicationProps: async () => <any>{},
+    });
 
     testContainer.bind(UserPreferenceProvider).toSelf().inSingletonScope();
     testContainer.bind(WorkspacePreferenceProvider).toSelf().inSingletonScope();
